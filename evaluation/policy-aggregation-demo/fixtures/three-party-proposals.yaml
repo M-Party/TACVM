@@ -1,0 +1,328 @@
+context: &context
+  policy_id: sha384:POLICY_TEST_001
+  version: 1
+  round: 0
+  roster_digest: sha384:ROSTER_TEST_001
+
+defaults: &defaults
+  roles: DENY
+  workload_cvms: DENY
+  artifacts: DENY
+  secret_release: DENY
+  communications: DENY
+  lifecycle: DENY
+
+roles: &roles
+  assignments:
+    s1: model_owner
+    s2: data_owner
+    s3: operator
+
+proposals:
+  - schema: tacvm-policy-proposal/v0.1
+    context: *context
+    author:
+      slot: s1
+    defaults: *defaults
+    roles: *roles
+    workload_cvms:
+      entries:
+        inference-cvm:
+          tee_type: tdx
+          measurements:
+            mrtd:
+              allowed: [MRTD_A, MRTD_B]
+            rtmr: {}
+            rootfs:
+              scheme: dm_verity
+              allowed_root_hashes: [ROOTFS_R1]
+          quote_verification:
+            require_valid_chain: true
+            accepted_tcb_statuses: [UP_TO_DATE]
+          launch_context:
+            required_fields:
+              - workload_cvm_id
+              - policy_id
+              - operation_cvm_channel_key
+          trusted_service_channel:
+            second_quote_required: true
+            proof_of_key_possession_required: true
+    artifacts:
+      entries:
+        inference-service:
+          kind: container
+          allowed_content_digests: [ARTIFACT_H1, ARTIFACT_H2]
+          encryption: REQUIRED
+          registrars: ["role:model_owner"]
+    secret_release:
+      entries:
+        bundle-key:
+          secret_type: artifact_key
+          artifact: inference-service
+          workload_cvms: [inference-cvm]
+          operations: [admit, update]
+          requesters: ["role:model_owner", "role:operator"]
+          require_authenticated_binding: true
+          require_artifact_digest_match: true
+    communications:
+      entries:
+        client-api:
+          direction: egress
+          protocol: tcp
+          endpoints:
+            - host: api.collaboration.test
+              ports: [443]
+            - host: telemetry.collaboration.test
+              ports: [443]
+          peer_identity:
+            spki_sha256: [CLIENT_SPKI, TELEMETRY_SPKI]
+    lifecycle:
+      rules:
+        - id: s1-admit
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: admit
+          requester: "role:operator"
+          from: absent
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s1-update
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: update
+          requester: "role:model_owner"
+          from: running
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s1-stop
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: stop
+          requester: "role:operator"
+          from: running
+          to: stopped
+          artifact: null
+          secrets: []
+          communication_profiles: []
+        - id: s1-delete-running
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: delete
+          requester: "role:operator"
+          from: running
+          to: absent
+          artifact: null
+          secrets: []
+          communication_profiles: []
+        - id: s1-delete-stopped
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: delete
+          requester: "role:operator"
+          from: stopped
+          to: absent
+          artifact: null
+          secrets: []
+          communication_profiles: []
+
+  - schema: tacvm-policy-proposal/v0.1
+    context: *context
+    author:
+      slot: s2
+    defaults: *defaults
+    roles: *roles
+    workload_cvms:
+      entries:
+        inference-cvm:
+          tee_type: tdx
+          measurements:
+            mrtd:
+              allowed: [MRTD_A]
+            rtmr: {}
+            rootfs:
+              scheme: dm_verity
+              allowed_root_hashes: [ROOTFS_R1, ROOTFS_R2]
+          quote_verification:
+            require_valid_chain: true
+            accepted_tcb_statuses: [UP_TO_DATE]
+          launch_context:
+            required_fields:
+              - workload_cvm_id
+              - policy_id
+              - operation_cvm_channel_key
+          trusted_service_channel:
+            second_quote_required: true
+            proof_of_key_possession_required: true
+    artifacts:
+      entries:
+        inference-service:
+          kind: container
+          allowed_content_digests: [ARTIFACT_H1]
+          encryption: REQUIRED
+          registrars: ["role:model_owner"]
+    secret_release:
+      entries:
+        bundle-key:
+          secret_type: artifact_key
+          artifact: inference-service
+          workload_cvms: [inference-cvm]
+          operations: [admit, update]
+          requesters: ["role:model_owner", "role:operator"]
+          require_authenticated_binding: true
+          require_artifact_digest_match: true
+    communications:
+      entries:
+        client-api:
+          direction: egress
+          protocol: tcp
+          endpoints:
+            - host: api.collaboration.test
+              ports: [443]
+          peer_identity:
+            spki_sha256: [CLIENT_SPKI]
+    lifecycle:
+      rules:
+        - id: s2-admit
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: admit
+          requester: "role:operator"
+          from: absent
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s2-update
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: update
+          requester: "role:model_owner"
+          from: running
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s2-stop
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: stop
+          requester: "role:operator"
+          from: running
+          to: stopped
+          artifact: null
+          secrets: []
+          communication_profiles: []
+        - id: s2-delete-stopped
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: delete
+          requester: "role:operator"
+          from: stopped
+          to: absent
+          artifact: null
+          secrets: []
+          communication_profiles: []
+
+  - schema: tacvm-policy-proposal/v0.1
+    context: *context
+    author:
+      slot: s3
+    defaults: *defaults
+    roles: *roles
+    workload_cvms:
+      entries:
+        inference-cvm:
+          tee_type: tdx
+          measurements:
+            mrtd:
+              allowed: [MRTD_A, MRTD_C]
+            rtmr: {}
+            rootfs:
+              scheme: dm_verity
+              allowed_root_hashes: [ROOTFS_R1]
+          quote_verification:
+            require_valid_chain: true
+            accepted_tcb_statuses: [UP_TO_DATE, CONFIGURATION_NEEDED]
+          launch_context:
+            required_fields:
+              - workload_cvm_id
+              - policy_id
+              - operation_cvm_channel_key
+          trusted_service_channel:
+            second_quote_required: true
+            proof_of_key_possession_required: true
+    artifacts:
+      entries:
+        inference-service:
+          kind: container
+          allowed_content_digests: [ARTIFACT_H1, ARTIFACT_H3]
+          encryption: REQUIRED
+          registrars: ["role:model_owner"]
+    secret_release:
+      entries:
+        bundle-key:
+          secret_type: artifact_key
+          artifact: inference-service
+          workload_cvms: [inference-cvm]
+          operations: [admit, update]
+          requesters: ["role:model_owner", "role:operator"]
+          require_authenticated_binding: true
+          require_artifact_digest_match: true
+    communications:
+      entries:
+        client-api:
+          direction: egress
+          protocol: tcp
+          endpoints:
+            - host: api.collaboration.test
+              ports: [443]
+            - host: admin.collaboration.test
+              ports: [443]
+          peer_identity:
+            spki_sha256: [CLIENT_SPKI, ADMIN_SPKI]
+    lifecycle:
+      rules:
+        - id: s3-admit
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: admit
+          requester: "role:operator"
+          from: absent
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s3-update
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: update
+          requester: "role:model_owner"
+          from: running
+          to: running
+          artifact: inference-service
+          secrets: [bundle-key]
+          communication_profiles: [client-api]
+        - id: s3-stop
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: stop
+          requester: "role:operator"
+          from: running
+          to: stopped
+          artifact: null
+          secrets: []
+          communication_profiles: []
+        - id: s3-delete-stopped
+          workload: inference-service
+          workload_cvm: inference-cvm
+          operation: delete
+          requester: "role:operator"
+          from: stopped
+          to: absent
+          artifact: null
+          secrets: []
+          communication_profiles: []
