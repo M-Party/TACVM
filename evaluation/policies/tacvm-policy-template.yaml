@@ -1,0 +1,102 @@
+# Provisional TACVM participant proposal. Human-readable YAML is input only.
+# Hashes and signatures must cover a separately defined canonical encoding.
+
+schema: tacvm-policy-proposal/v0.1
+
+context:
+  policy_id: "${POLICY_ID}"
+  version: 1
+  round: 0
+  roster_digest: "${ROSTER_DIGEST}"
+
+author:
+  slot: "${AUTHOR_SLOT}"
+
+# Every unlisted identifier has explicit semantics.
+defaults:
+  roles: DENY
+  workload_cvms: DENY
+  artifacts: DENY
+  secret_release: DENY
+  communications: DENY
+  lifecycle: DENY
+
+roles:
+  assignments:
+    "${SLOT_ID}": "${ROLE_NAME}"
+
+workload_cvms:
+  entries:
+    "${WORKLOAD_CVM_CLASS}":
+      tee_type: tdx
+      measurements:
+        mrtd:
+          allowed: ["${MRTD_SHA384}"]
+        rtmr:
+          "${RTMR_INDEX}":
+            allowed: ["${RTMR_SHA384}"]
+        rootfs:
+          # Choose `image_digest` or `dm_verity` in the implementation.
+          scheme: dm_verity
+          allowed_root_hashes: ["${ROOTFS_ROOT_HASH}"]
+      quote_verification:
+        require_valid_chain: true
+        accepted_tcb_statuses: ["${ACCEPTED_TCB_STATUS}"]
+      launch_context:
+        required_fields:
+          - workload_cvm_id
+          - policy_id
+          - operation_cvm_channel_key
+      trusted_service_channel:
+        second_quote_required: true
+        proof_of_key_possession_required: true
+
+artifacts:
+  entries:
+    "${ARTIFACT_ID}":
+      kind: "${ARTIFACT_KIND}"
+      allowed_content_digests: ["${ARTIFACT_SHA256}"]
+      encryption: REQUIRED
+      registrars: ["role:${REGISTRAR_ROLE}"]
+
+secret_release:
+  entries:
+    "${SECRET_ID}":
+      secret_type: artifact_key
+      artifact: "${ARTIFACT_ID}"
+      workload_cvms: ["${WORKLOAD_CVM_CLASS}"]
+      operations: [admit, update]
+      requesters: ["role:${REQUESTER_ROLE}"]
+      require_authenticated_binding: true
+      require_artifact_digest_match: true
+
+communications:
+  entries:
+    "${COMMUNICATION_PROFILE}":
+      direction: egress
+      protocol: tcp
+      endpoints:
+        - host: "${DESTINATION_HOST}"
+          ports: [443]
+      peer_identity:
+        spki_sha256: ["${PEER_SPKI_SHA256}"]
+
+lifecycle:
+  rules:
+    - id: "${RULE_ID}"
+      workload: "${WORKLOAD_ID}"
+      workload_cvm: "${WORKLOAD_CVM_CLASS}"
+      operation: admit
+      requester: "role:${REQUESTER_ROLE}"
+      from: absent
+      to: running
+      artifact: "${ARTIFACT_ID}"
+      secrets: ["${SECRET_ID}"]
+      communication_profiles: ["${COMMUNICATION_PROFILE}"]
+
+# This envelope is outside the canonical proposal body above.
+authentication:
+  canonical_encoding: "${CANONICAL_ENCODING}"
+  proposal_digest: "${PROPOSAL_DIGEST}"
+  signature_algorithm: "${SIGNATURE_ALGORITHM}"
+  signature: "${SIGNATURE}"

@@ -1,0 +1,61 @@
+run_id: "${RUN_ID}"
+experiment: "${EXPERIMENT_ID}"
+variant: "${VARIANT}"
+started_at_utc: "${ISO_8601_TIMESTAMP}"
+
+source:
+  repository_commit: "${COMMIT}"
+  dirty_tree: false
+  build_id: "${BUILD_ID}"
+  policy_fixture: "${POLICY_FIXTURE_PATH}"
+  policy_fixture_digest: "${POLICY_FIXTURE_SHA256}"
+
+hardware:
+  machine_id: "${ANONYMIZED_MACHINE_ID}"
+  cpu_model: "${CPU_MODEL}"
+  sockets: "${SOCKETS}"
+  physical_cores: "${PHYSICAL_CORES}"
+  allocated_vcpus: "${VCPUS}"
+  memory_bytes: "${MEMORY_BYTES}"
+  storage_type: "${STORAGE_TYPE}"
+  tdx_module_version: "${TDX_MODULE_VERSION}"
+
+software:
+  host_os: "${HOST_OS}"
+  host_kernel: "${HOST_KERNEL}"
+  guest_kernel: "${GUEST_KERNEL}"
+  tdvf_version: "${TDVF_VERSION}"
+  qgs_version: "${QGS_VERSION}"
+  qvs_version: "${QVS_VERSION}"
+  operation_cvm_image_digest: "${OPERATION_CVM_IMAGE_DIGEST}"
+  operation_cvm_verity_root_hash: "${OPERATION_CVM_VERITY_ROOT_HASH}"
+  workload_cvm_image_digest: "${WORKLOAD_CVM_IMAGE_DIGEST}"
+  workload_cvm_verity_root_hash: "${WORKLOAD_CVM_VERITY_ROOT_HASH}"
+
+factors:
+  participants: "${N}"
+  policy_objects: "${POLICY_OBJECTS}"
+  policy_rules: "${POLICY_RULES}"
+  workload_cvms: "${WORKLOAD_CVMS}"
+  concurrency: "${CONCURRENCY}"
+  artifact_bytes: "${ARTIFACT_BYTES}"
+  rootfs_bytes: "${ROOTFS_BYTES}"
+  rootfs_integrity_scheme: "${ROOTFS_SCHEME}"
+  operation_cvm_authentication: "${POST_BOOT_AUTH_MODE}"
+  workload_cvm_attestation: "${WORKLOAD_ATTESTATION_MODE}"
+  network_rtt_ms: "${NETWORK_RTT_MS}"
+  quote_cache_state: "${COLD_OR_WARM}"
+
+method:
+  warmup_runs: 5
+  measured_runs: 30
+  random_seed: "${RANDOM_SEED}"
+  cpu_pinning: "${CPU_PINNING}"
+  clock: monotonic
+
+artifacts:
+  raw_event_log: "${RAW_EVENT_LOG}"
+  measurement_csv: "${MEASUREMENT_CSV}"
+  stderr_log: "${STDERR_LOG}"
+
+notes: "${NOTES}"
