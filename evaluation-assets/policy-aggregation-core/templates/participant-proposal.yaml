@@ -1,16 +1,17 @@
 # Provisional TACVM participant proposal. Human-readable YAML is input only.
-# Hashes and signatures must cover a separately defined canonical encoding.
+# H(proposal) covers the schema, defaults, and six policy sections using the
+# prototype's canonical encoding. The participant sends this body inside a
+# separate signed TACVM-PROPOSAL envelope.
 
-schema: tacvm-policy-proposal/v0.1
+schema: tacvm-policy-proposal/v0.2
 
 context:
   policy_id: "${POLICY_ID}"
   version: 1
   round: 0
-  roster_digest: "${ROSTER_DIGEST}"
 
 author:
-  slot: "${AUTHOR_SLOT}"
+  participant_id: "${PARTICIPANT_ID}"
 
 # Every unlisted identifier has explicit semantics.
 defaults:
@@ -23,7 +24,7 @@ defaults:
 
 roles:
   assignments:
-    "${SLOT_ID}": "${ROLE_NAME}"
+    "${ROLE_PARTICIPANT_ID}": "${ROLE_NAME}"
 
 workload_cvms:
   entries:
@@ -48,7 +49,8 @@ workload_cvms:
           - policy_id
           - operation_cvm_channel_key
       trusted_service_channel:
-        second_quote_required: true
+        # TACVM uses one Quote after the Trusted Service has generated its key.
+        single_post_boot_quote_required: true
         proof_of_key_possession_required: true
 
 artifacts:
@@ -93,10 +95,3 @@ lifecycle:
       artifact: "${ARTIFACT_ID}"
       secrets: ["${SECRET_ID}"]
       communication_profiles: ["${COMMUNICATION_PROFILE}"]
-
-# This envelope is outside the canonical proposal body above.
-authentication:
-  canonical_encoding: "${CANONICAL_ENCODING}"
-  proposal_digest: "${PROPOSAL_DIGEST}"
-  signature_algorithm: "${SIGNATURE_ALGORITHM}"
-  signature: "${SIGNATURE}"

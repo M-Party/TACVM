@@ -1,0 +1,62 @@
+schema: tacvm-evaluation-run/v0.2
+run_id: "${RUN_ID}"
+created_utc: "${CREATED_UTC}"
+
+experiment:
+  id: "${EXPERIMENT_ID}"
+  research_question: "${RQ1_RQ2_OR_RQ3}"
+  variant: "${VARIANT}"
+  repetition_session: "${SESSION_ID}"
+  warmup_trials: 5
+  measured_trials: 30
+
+source:
+  repository: "${REPOSITORY_URL_OR_PATH}"
+  revision: "${COMMIT_OR_BUILD_ID}"
+  dirty_tree: "${TRUE_OR_FALSE}"
+
+environment:
+  host_id: "${HOST_ID}"
+  cpu: "${CPU_MODEL}"
+  memory_gib: "${MEMORY_GIB}"
+  storage: "${STORAGE_DESCRIPTION}"
+  host_os: "${HOST_OS}"
+  host_kernel: "${HOST_KERNEL}"
+  guest_kernel: "${GUEST_KERNEL}"
+  tdx_module: "${TDX_MODULE_VERSION}"
+  tdvf: "${TDVF_VERSION}"
+  qgs: "${QGS_VERSION}"
+  qvs: "${QVS_VERSION}"
+  quote_collateral_cache: "${COLD_OR_WARM}"
+  measured_network_rtt_ms: "${RTT_MS}"
+
+operation_cvm:
+  vcpus: "${OPERATION_CVM_VCPUS}"
+  memory_mib: "${OPERATION_CVM_MEMORY_MIB}"
+  initrd_digest: "${OPERATION_CVM_INITRD_DIGEST}"
+  dm_verity_root_hash: "${OPERATION_CVM_ROOT_HASH}"
+
+workload_cvm:
+  count: "${WORKLOAD_CVM_COUNT}"
+  concurrency: "${WORKLOAD_CVM_CONCURRENCY}"
+  vcpus: "${WORKLOAD_CVM_VCPUS}"
+  memory_mib: "${WORKLOAD_CVM_MEMORY_MIB}"
+  dm_verity_root_hash: "${WORKLOAD_CVM_ROOT_HASH}"
+  quote_protocol: single_post_boot_quote
+
+policy:
+  schema: tacvm-policy-proposal/v0.2
+  fixture: "${POLICY_FIXTURE}"
+  participant_count: "${PARTICIPANT_COUNT}"
+  rule_count: "${POLICY_RULE_COUNT}"
+  policy_id: "${POLICY_ID}"
+  version: "${POLICY_VERSION}"
+  round: "${POLICY_ROUND}"
+  candidate_digest: "${CANDIDATE_DIGEST}"
+
+workload:
+  name: "${WORKLOAD_NAME}"
+  artifact_size_bytes: "${ARTIFACT_SIZE_BYTES}"
+  artifact_digest: "${ARTIFACT_DIGEST}"
+
+notes: "${NOTES}"

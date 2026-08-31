@@ -3,12 +3,11 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tacvm-policy-aggregation"
-version = "0.1.0"
-description = "Executable TACVM multi-participant policy aggregation prototype"
+name = "tacvm-policy-aggregation-core"
+version = "0.3.0"
+description = "Deterministic restrictive policy aggregation core for TACVM"
 requires-python = ">=3.9"
 dependencies = [
-  "cryptography>=41",
   "PyYAML>=6",
 ]
 
@@ -16,7 +15,7 @@ dependencies = [
 test = ["pytest>=7"]
 
 [tool.setuptools.packages.find]
-include = ["tacvm_policy*"]
+include = ["tacvm_policy_core*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

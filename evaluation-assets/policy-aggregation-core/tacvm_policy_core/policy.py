@@ -1,16 +1,9 @@
 from __future__ import annotations
 
-import base64
 import copy
 import hashlib
 import json
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
-
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import (
-    Ed25519PrivateKey,
-    Ed25519PublicKey,
-)
+from typing import Any, Dict, Iterable, List, Mapping, Sequence, Set
 
 
 REQUIRED_DEFAULTS = (
@@ -186,25 +179,43 @@ def _contexts_equal(left: Mapping[str, Any], right: Mapping[str, Any]) -> bool:
     return canonical_json(left) == canonical_json(right)
 
 
+def _validate_round_context(context: Mapping[str, Any]) -> None:
+    if set(context) != {"policy_id", "version", "round"}:
+        _fail(
+            "INVALID_CONTEXT",
+            "Round context must contain exactly policy_id, version, and round",
+        )
+    if not isinstance(context["policy_id"], str) or not context["policy_id"]:
+        _fail("INVALID_CONTEXT", "policy_id must be a non-empty string")
+    if type(context["version"]) is not int or context["version"] < 1:
+        _fail("INVALID_CONTEXT", "version must be a positive integer")
+    if type(context["round"]) is not int or context["round"] < 0:
+        _fail("INVALID_CONTEXT", "round must be a non-negative integer")
+
+
+def validate_round_context(context: Mapping[str, Any]) -> None:
+    _validate_round_context(context)
+
+
 def validate_proposal(
     proposal: Mapping[str, Any],
     expected_context: Mapping[str, Any],
-    roster_slots: Set[str],
+    participant_ids: Set[str],
 ) -> None:
-    if proposal.get("schema") != "tacvm-policy-proposal/v0.1":
+    if proposal.get("schema") != "tacvm-policy-proposal/v0.2":
         _fail("UNSUPPORTED_SCHEMA", f"Unsupported schema {proposal.get('schema')}")
     if not _contexts_equal(proposal.get("context", {}), expected_context):
         _fail("REJECT_CONTEXT", "Proposal context does not match the active round")
-    slot = proposal.get("author", {}).get("slot")
-    if slot not in roster_slots:
-        _fail("UNKNOWN_SLOT", f"Unknown proposal author {slot}")
+    participant_id = proposal.get("author", {}).get("participant_id")
+    if participant_id not in participant_ids:
+        _fail("UNKNOWN_PARTICIPANT", f"Unknown proposal author {participant_id}")
     defaults = proposal.get("defaults", {})
     for field in REQUIRED_DEFAULTS:
         if defaults.get(field) not in {"ANY", "DENY"}:
             _fail("INVALID_DEFAULT", f"{field} must declare ANY or DENY")
-    for mapped_slot, role in proposal.get("roles", {}).get("assignments", {}).items():
-        if mapped_slot not in roster_slots or not isinstance(role, str) or not role:
-            _fail("INVALID_ROLE", f"Invalid role assignment for {mapped_slot}")
+    for mapped_id, role in proposal.get("roles", {}).get("assignments", {}).items():
+        if mapped_id not in participant_ids or not isinstance(role, str) or not role:
+            _fail("INVALID_ROLE", f"Invalid role assignment for {mapped_id}")
     for rule in proposal.get("lifecycle", {}).get("rules", []):
         if rule.get("operation") not in SUPPORTED_OPERATIONS:
             _fail("INVALID_OPERATION", f"Unsupported operation {rule.get('operation')}")
@@ -215,57 +226,18 @@ def validate_proposal(
 
 
 def proposal_digest(proposal: Mapping[str, Any]) -> str:
-    return _sha384(normalize_proposal(proposal))
-
-
-def _proposal_signing_message(slot: str, digest_value: str) -> bytes:
-    return canonical_json(
-        {
-            "domain": "TACVM-PROPOSAL",
-            "slot": slot,
-            "proposal_digest": digest_value,
-        }
-    ).encode("utf-8")
-
-
-def generate_participant_key_pair() -> Tuple[Ed25519PrivateKey, Ed25519PublicKey]:
-    private_key = Ed25519PrivateKey.generate()
-    return private_key, private_key.public_key()
-
-
-def sign_proposal(
-    proposal: Mapping[str, Any], private_key: Ed25519PrivateKey
-) -> Dict[str, Any]:
     normalized = normalize_proposal(proposal)
-    digest_value = proposal_digest(normalized)
-    signature = private_key.sign(
-        _proposal_signing_message(normalized["author"]["slot"], digest_value)
-    )
-    return {
-        "proposal": normalized,
-        "proposal_digest": digest_value,
-        "signature_algorithm": "Ed25519",
-        "signature": base64.b64encode(signature).decode("ascii"),
+    constraints = {
+        "schema": normalized["schema"],
+        "defaults": normalized["defaults"],
+        "roles": normalized["roles"],
+        "workload_cvms": normalized["workload_cvms"],
+        "artifacts": normalized["artifacts"],
+        "secret_release": normalized["secret_release"],
+        "communications": normalized["communications"],
+        "lifecycle": normalized["lifecycle"],
     }
-
-
-def _verify_signed_proposal(
-    envelope: Mapping[str, Any], public_key: Ed25519PublicKey
-) -> None:
-    if envelope.get("signature_algorithm") != "Ed25519":
-        _fail("UNSUPPORTED_SIGNATURE", "Only Ed25519 is supported")
-    actual_digest = proposal_digest(envelope["proposal"])
-    if actual_digest != envelope.get("proposal_digest"):
-        _fail("PROPOSAL_DIGEST_MISMATCH", "Proposal digest does not match body")
-    try:
-        public_key.verify(
-            base64.b64decode(envelope["signature"], validate=True),
-            _proposal_signing_message(
-                envelope["proposal"]["author"]["slot"], actual_digest
-            ),
-        )
-    except (InvalidSignature, ValueError, TypeError):
-        _fail("INVALID_PROPOSAL_SIGNATURE", "Proposal signature verification failed")
+    return _sha384(constraints)
 
 
 def _union_keys(
@@ -314,7 +286,8 @@ def _entries_for(
         elif proposal["defaults"][section] == "DENY":
             _fail(
                 bottom_code,
-                f"{proposal['author']['slot']} denies unlisted {section}.{object_name}",
+                f"{proposal['author']['participant_id']} denies unlisted "
+                f"{section}.{object_name}",
             )
     return entries
 
@@ -337,13 +310,17 @@ def _join_boolean_requirements(
 def _join_roles(proposals: Sequence[Mapping[str, Any]]) -> Dict[str, Any]:
     assignments: Dict[str, str] = {}
     for proposal in proposals:
-        for slot, role in proposal["roles"]["assignments"].items():
-            if slot in assignments and assignments[slot] != role:
+        for participant_id, role in proposal["roles"]["assignments"].items():
+            if (
+                participant_id in assignments
+                and assignments[participant_id] != role
+            ):
                 _fail(
                     "BOTTOM_ROLE_CONFLICT",
-                    f"Slot {slot} is assigned both {assignments[slot]} and {role}",
+                    f"Participant {participant_id} is assigned both "
+                    f"{assignments[participant_id]} and {role}",
                 )
-            assignments[slot] = role
+            assignments[participant_id] = role
     return {"assignments": assignments}
 
 
@@ -576,11 +553,68 @@ def candidate_digest(candidate: Mapping[str, Any]) -> str:
     return _sha384(candidate)
 
 
+def build_candidate(
+    context: Mapping[str, Any],
+    participant_order: Sequence[str],
+    proposals_by_participant: Mapping[str, Mapping[str, Any]],
+) -> Dict[str, Any]:
+    """Build a canonical candidate from one proposal per manifest participant."""
+
+    validate_round_context(context)
+    ordered_ids = list(participant_order)
+    if not ordered_ids:
+        _fail("EMPTY_PARTICIPANT_SET", "At least one participant is required")
+    if len(ordered_ids) != len(set(ordered_ids)):
+        _fail("DUPLICATE_PARTICIPANT", "Participant order contains duplicates")
+
+    expected_ids = set(ordered_ids)
+    supplied_ids = set(proposals_by_participant)
+    if expected_ids != supplied_ids:
+        missing = sorted(expected_ids - supplied_ids)
+        unexpected = sorted(supplied_ids - expected_ids)
+        details = []
+        if missing:
+            details.append(f"missing: {', '.join(missing)}")
+        if unexpected:
+            details.append(f"unexpected: {', '.join(unexpected)}")
+        _fail("INCOMPLETE_PROPOSAL_SET", "; ".join(details))
+
+    proposals = []
+    inputs = []
+    for participant_id in ordered_ids:
+        proposal = normalize_proposal(proposals_by_participant[participant_id])
+        validate_proposal(proposal, context, expected_ids)
+        if proposal["author"]["participant_id"] != participant_id:
+            _fail(
+                "PROPOSAL_AUTHOR_MISMATCH",
+                f"Proposal stored for {participant_id} has another author",
+            )
+        digest_value = proposal_digest(proposal)
+        proposals.append(proposal)
+        inputs.append(
+            {
+                "participant_id": participant_id,
+                "proposal_digest": digest_value,
+            }
+        )
+
+    candidate = {
+        "schema": "tacvm-policy-candidate/v0.2",
+        "context": copy.deepcopy(dict(context)),
+        "inputs": inputs,
+        "policy": join_policy_bodies(proposals),
+    }
+    return {
+        "candidate": candidate,
+        "candidate_digest": candidate_digest(candidate),
+    }
+
+
 def _candidate_as_proposal(candidate: Mapping[str, Any]) -> Dict[str, Any]:
     return {
-        "schema": "tacvm-policy-proposal/v0.1",
+        "schema": "tacvm-policy-proposal/v0.2",
         "context": copy.deepcopy(candidate["context"]),
-        "author": {"slot": "candidate"},
+        "author": {"participant_id": "candidate"},
         "defaults": {field: "DENY" for field in REQUIRED_DEFAULTS},
         **copy.deepcopy(candidate["policy"]),
     }
@@ -593,142 +627,27 @@ def verify_candidate_against_proposal(
         _fail("CANDIDATE_CONTEXT_MISMATCH", "Candidate context differs from proposal")
     own_digest = proposal_digest(proposal)
     included = any(
-        item["slot"] == proposal["author"]["slot"]
+        item["participant_id"] == proposal["author"]["participant_id"]
         and item["proposal_digest"] == own_digest
         for item in candidate["inputs"]
     )
     if not included:
         _fail(
             "PROPOSAL_NOT_INCLUDED",
-            f"Candidate omits {proposal['author']['slot']}'s proposal",
+            f"Candidate omits {proposal['author']['participant_id']}'s proposal",
         )
     try:
         restricted = join_policy_bodies([proposal, _candidate_as_proposal(candidate)])
     except PolicyError as exc:
         _fail(
             "CANDIDATE_WEAKENS_PROPOSAL",
-            f"Candidate conflicts with {proposal['author']['slot']}: {exc}",
+            f"Candidate conflicts with "
+            f"{proposal['author']['participant_id']}: {exc}",
         )
     if canonical_json(restricted) != canonical_json(candidate["policy"]):
         _fail(
             "CANDIDATE_WEAKENS_PROPOSAL",
-            f"Candidate admits behavior not allowed by {proposal['author']['slot']}",
+            f"Candidate admits behavior not allowed by "
+            f"{proposal['author']['participant_id']}",
         )
     return True
-
-
-def _confirmation_message(context: Mapping[str, Any], digest_value: str) -> bytes:
-    return canonical_json(
-        {
-            "domain": "TACVM-CONFIRM",
-            "roster_digest": context["roster_digest"],
-            "policy_id": context["policy_id"],
-            "version": context["version"],
-            "round": context["round"],
-            "candidate_digest": digest_value,
-        }
-    ).encode("utf-8")
-
-
-def sign_confirmation(
-    slot: str,
-    context: Mapping[str, Any],
-    digest_value: str,
-    private_key: Ed25519PrivateKey,
-) -> Dict[str, Any]:
-    signature = private_key.sign(_confirmation_message(context, digest_value))
-    return {
-        "slot": slot,
-        "candidate_digest": digest_value,
-        "signature_algorithm": "Ed25519",
-        "signature": base64.b64encode(signature).decode("ascii"),
-    }
-
-
-class PolicyAggregator:
-    def __init__(
-        self,
-        context: Mapping[str, Any],
-        roster: Mapping[str, Ed25519PublicKey],
-    ) -> None:
-        self.context = copy.deepcopy(dict(context))
-        self.roster = dict(roster)
-        self.proposals: Dict[str, Dict[str, Any]] = {}
-        self.confirmations: Dict[str, Dict[str, Any]] = {}
-        self.candidate: Optional[Dict[str, Any]] = None
-        self.candidate_digest_value: Optional[str] = None
-        self.active: Optional[Dict[str, Any]] = None
-
-    def submit_proposal(self, envelope: Mapping[str, Any]) -> str:
-        if self.candidate is not None:
-            _fail("ROUND_CLOSED", "Cannot add a proposal after candidate construction")
-        slot = envelope.get("proposal", {}).get("author", {}).get("slot")
-        public_key = self.roster.get(slot)
-        if public_key is None:
-            _fail("UNKNOWN_SLOT", f"No enrolled policy key for {slot}")
-        if slot in self.proposals:
-            _fail("DUPLICATE_PROPOSAL", f"Slot {slot} already submitted a proposal")
-        validate_proposal(envelope["proposal"], self.context, set(self.roster))
-        _verify_signed_proposal(envelope, public_key)
-        self.proposals[slot] = copy.deepcopy(dict(envelope))
-        return envelope["proposal_digest"]
-
-    def build_candidate(self) -> Dict[str, Any]:
-        missing = sorted(set(self.roster) - set(self.proposals))
-        if missing:
-            _fail("INCOMPLETE_PROPOSAL_SET", f"Missing proposals from {', '.join(missing)}")
-        slots = sorted(self.roster)
-        proposals = [self.proposals[slot]["proposal"] for slot in slots]
-        self.candidate = {
-            "schema": "tacvm-policy-candidate/v0.1",
-            "context": copy.deepcopy(self.context),
-            "inputs": [
-                {
-                    "slot": slot,
-                    "proposal_digest": self.proposals[slot]["proposal_digest"],
-                }
-                for slot in slots
-            ],
-            "policy": join_policy_bodies(proposals),
-        }
-        self.candidate_digest_value = candidate_digest(self.candidate)
-        return {
-            "candidate": copy.deepcopy(self.candidate),
-            "candidate_digest": self.candidate_digest_value,
-        }
-
-    def submit_confirmation(self, confirmation: Mapping[str, Any]) -> None:
-        if self.candidate is None or self.candidate_digest_value is None:
-            _fail("NO_CANDIDATE", "Build a candidate before collecting confirmations")
-        slot = confirmation.get("slot")
-        public_key = self.roster.get(slot)
-        if public_key is None:
-            _fail("UNKNOWN_SLOT", f"No enrolled policy key for {slot}")
-        if slot in self.confirmations:
-            _fail("DUPLICATE_CONFIRMATION", f"{slot} already confirmed")
-        if confirmation.get("candidate_digest") != self.candidate_digest_value:
-            _fail("CANDIDATE_DIGEST_MISMATCH", "Confirmation targets another candidate")
-        try:
-            public_key.verify(
-                base64.b64decode(confirmation["signature"], validate=True),
-                _confirmation_message(self.context, self.candidate_digest_value),
-            )
-        except (InvalidSignature, ValueError, TypeError):
-            _fail("INVALID_CONFIRMATION_SIGNATURE", "Confirmation signature failed")
-        self.confirmations[slot] = copy.deepcopy(dict(confirmation))
-
-    def activate(self) -> Dict[str, Any]:
-        if self.candidate is None or self.candidate_digest_value is None:
-            _fail("NO_CANDIDATE", "No candidate exists")
-        missing = sorted(set(self.roster) - set(self.confirmations))
-        if missing:
-            _fail(
-                "INCOMPLETE_CONFIRMATION_SET",
-                f"Missing confirmations from {', '.join(missing)}",
-            )
-        self.active = {
-            "candidate": copy.deepcopy(self.candidate),
-            "candidate_digest": self.candidate_digest_value,
-            "confirmations": [self.confirmations[slot] for slot in sorted(self.roster)],
-        }
-        return copy.deepcopy(self.active)

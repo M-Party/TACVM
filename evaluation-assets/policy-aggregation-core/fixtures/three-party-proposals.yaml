@@ -2,7 +2,6 @@ context: &context
   policy_id: sha384:POLICY_TEST_001
   version: 1
   round: 0
-  roster_digest: sha384:ROSTER_TEST_001
 
 defaults: &defaults
   roles: DENY
@@ -14,15 +13,15 @@ defaults: &defaults
 
 roles: &roles
   assignments:
-    s1: model_owner
-    s2: data_owner
-    s3: operator
+    id_M: model_owner
+    id_D: data_owner
+    id_O: operator
 
 proposals:
-  - schema: tacvm-policy-proposal/v0.1
+  - schema: tacvm-policy-proposal/v0.2
     context: *context
     author:
-      slot: s1
+      participant_id: id_M
     defaults: *defaults
     roles: *roles
     workload_cvms:
@@ -45,7 +44,7 @@ proposals:
               - policy_id
               - operation_cvm_channel_key
           trusted_service_channel:
-            second_quote_required: true
+            single_post_boot_quote_required: true
             proof_of_key_possession_required: true
     artifacts:
       entries:
@@ -78,7 +77,7 @@ proposals:
             spki_sha256: [CLIENT_SPKI, TELEMETRY_SPKI]
     lifecycle:
       rules:
-        - id: s1-admit
+        - id: model-owner-admit
           workload: inference-service
           workload_cvm: inference-cvm
           operation: admit
@@ -88,7 +87,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s1-update
+        - id: model-owner-update
           workload: inference-service
           workload_cvm: inference-cvm
           operation: update
@@ -98,7 +97,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s1-stop
+        - id: model-owner-stop
           workload: inference-service
           workload_cvm: inference-cvm
           operation: stop
@@ -108,7 +107,7 @@ proposals:
           artifact: null
           secrets: []
           communication_profiles: []
-        - id: s1-delete-running
+        - id: model-owner-delete-running
           workload: inference-service
           workload_cvm: inference-cvm
           operation: delete
@@ -118,7 +117,7 @@ proposals:
           artifact: null
           secrets: []
           communication_profiles: []
-        - id: s1-delete-stopped
+        - id: model-owner-delete-stopped
           workload: inference-service
           workload_cvm: inference-cvm
           operation: delete
@@ -129,10 +128,10 @@ proposals:
           secrets: []
           communication_profiles: []
 
-  - schema: tacvm-policy-proposal/v0.1
+  - schema: tacvm-policy-proposal/v0.2
     context: *context
     author:
-      slot: s2
+      participant_id: id_D
     defaults: *defaults
     roles: *roles
     workload_cvms:
@@ -155,7 +154,7 @@ proposals:
               - policy_id
               - operation_cvm_channel_key
           trusted_service_channel:
-            second_quote_required: true
+            single_post_boot_quote_required: true
             proof_of_key_possession_required: true
     artifacts:
       entries:
@@ -186,7 +185,7 @@ proposals:
             spki_sha256: [CLIENT_SPKI]
     lifecycle:
       rules:
-        - id: s2-admit
+        - id: data-owner-admit
           workload: inference-service
           workload_cvm: inference-cvm
           operation: admit
@@ -196,7 +195,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s2-update
+        - id: data-owner-update
           workload: inference-service
           workload_cvm: inference-cvm
           operation: update
@@ -206,7 +205,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s2-stop
+        - id: data-owner-stop
           workload: inference-service
           workload_cvm: inference-cvm
           operation: stop
@@ -216,7 +215,7 @@ proposals:
           artifact: null
           secrets: []
           communication_profiles: []
-        - id: s2-delete-stopped
+        - id: data-owner-delete-stopped
           workload: inference-service
           workload_cvm: inference-cvm
           operation: delete
@@ -227,10 +226,10 @@ proposals:
           secrets: []
           communication_profiles: []
 
-  - schema: tacvm-policy-proposal/v0.1
+  - schema: tacvm-policy-proposal/v0.2
     context: *context
     author:
-      slot: s3
+      participant_id: id_O
     defaults: *defaults
     roles: *roles
     workload_cvms:
@@ -253,7 +252,7 @@ proposals:
               - policy_id
               - operation_cvm_channel_key
           trusted_service_channel:
-            second_quote_required: true
+            single_post_boot_quote_required: true
             proof_of_key_possession_required: true
     artifacts:
       entries:
@@ -286,7 +285,7 @@ proposals:
             spki_sha256: [CLIENT_SPKI, ADMIN_SPKI]
     lifecycle:
       rules:
-        - id: s3-admit
+        - id: operator-admit
           workload: inference-service
           workload_cvm: inference-cvm
           operation: admit
@@ -296,7 +295,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s3-update
+        - id: operator-update
           workload: inference-service
           workload_cvm: inference-cvm
           operation: update
@@ -306,7 +305,7 @@ proposals:
           artifact: inference-service
           secrets: [bundle-key]
           communication_profiles: [client-api]
-        - id: s3-stop
+        - id: operator-stop
           workload: inference-service
           workload_cvm: inference-cvm
           operation: stop
@@ -316,7 +315,7 @@ proposals:
           artifact: null
           secrets: []
           communication_profiles: []
-        - id: s3-delete-stopped
+        - id: operator-delete-stopped
           workload: inference-service
           workload_cvm: inference-cvm
           operation: delete
