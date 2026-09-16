@@ -68,6 +68,7 @@ Committed homogeneous fixtures used by `tests/test_homogeneous_scale.py`:
 
 | N | File |
 |---|---|
+| 2 | `fixtures/two-party-homogeneous.yaml` |
 | 4 | `fixtures/four-party-homogeneous.yaml` |
 | 8 | `fixtures/eight-party-homogeneous.yaml` |
 | 16 | `fixtures/sixteen-party-homogeneous.yaml` |

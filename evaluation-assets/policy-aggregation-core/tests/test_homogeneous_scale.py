@@ -17,6 +17,7 @@ from tacvm_policy_core import (
 FIXTURE_DIR = Path(__file__).parents[1] / "fixtures"
 
 HOMOGENEOUS_YAML = {
+    2: FIXTURE_DIR / "two-party-homogeneous.yaml",
     4: FIXTURE_DIR / "four-party-homogeneous.yaml",
     8: FIXTURE_DIR / "eight-party-homogeneous.yaml",
     16: FIXTURE_DIR / "sixteen-party-homogeneous.yaml",
@@ -30,7 +31,7 @@ def assert_code(code, action):
     assert captured.value.code == code
 
 
-@pytest.mark.parametrize("n", [4, 8, 16, 32])
+@pytest.mark.parametrize("n", [2, 4, 8, 16, 32])
 def test_joins_homogeneous_proposals_from_yaml(n):
     context, proposals = load_policy_bundle(HOMOGENEOUS_YAML[n])
     order = participant_ids(n)
