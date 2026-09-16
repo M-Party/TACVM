@@ -51,3 +51,24 @@ pytest
 
 Use `templates/participant-proposal.yaml` to create participant inputs. The
 compatible three-party test case is in `fixtures/three-party-proposals.yaml`.
+
+For local scale tests, generate a homogeneous fixture (identical bodies,
+distinct `author.participant_id` only):
+
+```bash
+python fixtures/generate_homogeneous.py --n 16 --rules 4 \
+  -o fixtures/sixteen-party-homogeneous.yaml
+# Optional E1-style rule count:
+python fixtures/generate_homogeneous.py --n 32 --rules 100 \
+  -o fixtures/thirty-two-party-homogeneous-100rules.yaml
+pytest
+```
+
+Committed homogeneous fixtures used by `tests/test_homogeneous_scale.py`:
+
+| N | File |
+|---|---|
+| 4 | `fixtures/four-party-homogeneous.yaml` |
+| 8 | `fixtures/eight-party-homogeneous.yaml` |
+| 16 | `fixtures/sixteen-party-homogeneous.yaml` |
+| 32 | `fixtures/thirty-two-party-homogeneous.yaml` |
