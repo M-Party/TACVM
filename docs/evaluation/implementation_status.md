@@ -16,11 +16,11 @@
 | Restrictive join cannot widen authority | PARTIAL | `policy-aggregation-core` implements intersection/DENY joins |
 | Unanimous confirmation before activation | PARTIAL | Coordinator + confirmer prototypes |
 | Atomic policy update | PARTIAL | Activate publishes snapshot in prototype; persistence TBD |
-| Fresh `lambda_w` per Workload CVM | NOT_IMPLEMENTED | — |
-| Launch-context replay rejected | NOT_IMPLEMENTED | — |
-| Evidence binds launch context + `pk_w` | NOT_IMPLEMENTED | — |
-| `B_w` required before secrets/commands | NOT_IMPLEMENTED | — |
-| Restart/channel loss invalidates `B_w` | NOT_IMPLEMENTED | — |
+| Fresh `lambda_w` per Workload CVM | IMPLEMENTED (portable/mock) | `protocol/tacvm_protocol/workload.py` |
+| Launch-context replay rejected | IMPLEMENTED (portable/mock) | `WorkloadLaunchFSM` |
+| Evidence binds launch context + `pk_w` | PARTIAL | Mock attest hash via `TACVM-WORKLOAD-ATTEST` |
+| `B_w` required before secrets/commands | PARTIAL | `require_live_binding`; dispatcher not yet |
+| Restart/channel loss invalidates `B_w` | IMPLEMENTED (portable/mock) | `on_channel_lost` |
 | Trusted Service prior-state / artifact checks | NOT_IMPLEMENTED | — |
 | Replay protection for challenges/u/etc. | PARTIAL | Coauthor challenge path exists; full domain coverage TBD |
 | Global client IDs | EXISTING_AND_VERIFIED (coauthor) | Deployed to 16 CVMs |

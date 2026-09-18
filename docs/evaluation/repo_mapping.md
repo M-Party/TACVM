@@ -21,12 +21,12 @@
 | 3-party differential fixture | `.../fixtures/three-party-proposals.yaml` | IMPLEMENTED |
 | Canonical encode library | `protocol/tacvm_protocol/` | IMPLEMENTED (encode + hash_domain) |
 | BootManifest / d_M tooling | — | NOT_IMPLEMENTED |
-| Participant acceptance (TACVM-ACCEPT) | — | NOT_IMPLEMENTED |
+| Participant acceptance (TACVM-ACCEPT) | `protocol/tacvm_protocol/registry.py` | IMPLEMENTED (portable; mock keys) |
 | Quote Verifier / DCAP QVL | — | NOT IN THIS REPO |
 | Key Vault | — | NOT_IMPLEMENTED |
 | Workload Dispatcher | — | NOT_IMPLEMENTED |
 | Trusted Service | — | NOT_IMPLEMENTED |
-| `lambda_w` / pending launch / `B_w` | — | NOT_IMPLEMENTED |
+| `lambda_w` / pending launch / `B_w` | `protocol/tacvm_protocol/workload.py` | IMPLEMENTED (portable/mock FSM) |
 | `launch-client.sh` / fleet harness | — | NOT IN THIS REPO |
 | E1–E7 formal harness | — | NOT_IMPLEMENTED |
 | Mock TEE backend | `protocol/tacvm_protocol/backends/mock.py` | IMPLEMENTED |

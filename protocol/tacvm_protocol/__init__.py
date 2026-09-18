@@ -22,6 +22,12 @@ from .tee import (
     TeeBackendError,
     get_tee_backend,
 )
+from .workload import (
+    LaunchRecordStatus,
+    PendingLaunchRecord,
+    WorkloadLaunchError,
+    WorkloadLaunchFSM,
+)
 
 __all__ = [
     "DOMAINS",
@@ -42,4 +48,8 @@ __all__ = [
     "TeeBackend",
     "TeeBackendError",
     "get_tee_backend",
+    "LaunchRecordStatus",
+    "PendingLaunchRecord",
+    "WorkloadLaunchError",
+    "WorkloadLaunchFSM",
 ]

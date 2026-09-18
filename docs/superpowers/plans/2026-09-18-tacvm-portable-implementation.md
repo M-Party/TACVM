@@ -59,9 +59,9 @@
 
 ### Task 5: Launch context + `B_w` FSM (mock)
 
-- [ ] Tests for fresh `lambda_w`, replay reject, invalidate on channel loss
-- [ ] Implement pending launch + live binding state machine
-- [ ] Commit
+- [x] Tests for fresh `lambda_w`, replay reject, invalidate on channel loss
+- [x] Implement pending launch + live binding state machine
+- [x] Commit
 
 ### Task 6: Dispatcher / transition checks (portable, mock TS)
 
