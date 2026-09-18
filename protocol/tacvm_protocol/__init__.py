@@ -28,6 +28,11 @@ from .workload import (
     WorkloadLaunchError,
     WorkloadLaunchFSM,
 )
+from .dispatcher import (
+    DispatcherError,
+    TransitionDispatcher,
+    WorkloadLocalState,
+)
 
 __all__ = [
     "DOMAINS",
@@ -52,4 +57,7 @@ __all__ = [
     "PendingLaunchRecord",
     "WorkloadLaunchError",
     "WorkloadLaunchFSM",
+    "DispatcherError",
+    "TransitionDispatcher",
+    "WorkloadLocalState",
 ]

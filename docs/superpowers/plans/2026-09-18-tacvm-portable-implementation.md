@@ -65,9 +65,9 @@
 
 ### Task 6: Dispatcher / transition checks (portable, mock TS)
 
-- [ ] Tests for replay `u`, policy hash mismatch, binding-not-live, state mismatch
-- [ ] Implement ordered authorization + mock Trusted Service enforce
-- [ ] Commit
+- [x] Tests for replay `u`, policy hash mismatch, binding-not-live, state mismatch
+- [x] Implement ordered authorization + mock Trusted Service enforce
+- [x] Commit
 
 ### Task 7: Evaluation skeleton
 

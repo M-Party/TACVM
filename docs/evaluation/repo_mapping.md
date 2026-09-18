@@ -24,8 +24,8 @@
 | Participant acceptance (TACVM-ACCEPT) | `protocol/tacvm_protocol/registry.py` | IMPLEMENTED (portable; mock keys) |
 | Quote Verifier / DCAP QVL | — | NOT IN THIS REPO |
 | Key Vault | — | NOT_IMPLEMENTED |
-| Workload Dispatcher | — | NOT_IMPLEMENTED |
-| Trusted Service | — | NOT_IMPLEMENTED |
+| Workload Dispatcher | `protocol/tacvm_protocol/dispatcher.py` | PARTIAL (authz + mock TS state) |
+| Trusted Service | `protocol/tacvm_protocol/dispatcher.py` (mock local state) | PARTIAL |
 | `lambda_w` / pending launch / `B_w` | `protocol/tacvm_protocol/workload.py` | IMPLEMENTED (portable/mock FSM) |
 | `launch-client.sh` / fleet harness | — | NOT IN THIS REPO |
 | E1–E7 formal harness | — | NOT_IMPLEMENTED |

@@ -19,10 +19,10 @@
 | Fresh `lambda_w` per Workload CVM | IMPLEMENTED (portable/mock) | `protocol/tacvm_protocol/workload.py` |
 | Launch-context replay rejected | IMPLEMENTED (portable/mock) | `WorkloadLaunchFSM` |
 | Evidence binds launch context + `pk_w` | PARTIAL | Mock attest hash via `TACVM-WORKLOAD-ATTEST` |
-| `B_w` required before secrets/commands | PARTIAL | `require_live_binding`; dispatcher not yet |
+| `B_w` required before secrets/commands | IMPLEMENTED (portable/mock) | Dispatcher checks LIVE binding |
 | Restart/channel loss invalidates `B_w` | IMPLEMENTED (portable/mock) | `on_channel_lost` |
-| Trusted Service prior-state / artifact checks | NOT_IMPLEMENTED | — |
-| Replay protection for challenges/u/etc. | PARTIAL | Coauthor challenge path exists; full domain coverage TBD |
+| Trusted Service prior-state / artifact checks | PARTIAL | Mock local-state check in dispatcher |
+| Replay protection for challenges/u/etc. | PARTIAL | Transition `u` replay rejected; challenge path on coauthor host |
 | Global client IDs | EXISTING_AND_VERIFIED (coauthor) | Deployed to 16 CVMs |
 | `state_mutex_` / appraisal mutex | EXISTING_AND_VERIFIED (coauthor) | Concurrent retest passed; server stayed alive |
 

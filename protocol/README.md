@@ -25,6 +25,12 @@ Supported domains: `TACVM-BOOT`, `TACVM-ACCEPT`, `TACVM-POLICY`,
 `TACVM-PROPOSAL`, `TACVM-CONFIRM`, `TACVM-WORKLOAD`,
 `TACVM-WORKLOAD-ATTEST`, `TACVM-TRANS`.
 
+Portable state machines in this package:
+
+- `ParticipantRegistry` — TACVM-ACCEPT + all-registered barrier
+- `WorkloadLaunchFSM` — `lambda_w` pending records + `B_w` lifecycle
+- `TransitionDispatcher` — signed transition checks + mock local-state enforce
+
 TEE adapters:
 
 - `mock` — deterministic fake Quotes / provision / `B_w` for local tests
