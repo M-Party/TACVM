@@ -8,6 +8,10 @@ version = "0.1.0"
 description = "Canonical domain-separated encoding helpers for TACVM"
 requires-python = ">=3.9"
 
+dependencies = [
+  "cryptography>=41",
+]
+
 [project.optional-dependencies]
 test = ["pytest>=7"]
 

@@ -11,7 +11,7 @@
 |---|---|---|
 | No workload control before policy activation | NOT_IMPLEMENTED | No Operation CVM authority gate in this repo |
 | All participants authenticate same Operation CVM | PARTIAL / BLOCKED locally | Coauthor has RA path; this repo has no boot accept flow |
-| Unique policy-key registration | NOT_IMPLEMENTED | — |
+| Unique policy-key registration | IMPLEMENTED (portable) | `protocol/tacvm_protocol/registry.py` |
 | Proposal rounds scoped by pid/v/r | PARTIAL | Coordinator uses context fields; full pid derivation pending |
 | Restrictive join cannot widen authority | PARTIAL | `policy-aggregation-core` implements intersection/DENY joins |
 | Unanimous confirmation before activation | PARTIAL | Coordinator + confirmer prototypes |

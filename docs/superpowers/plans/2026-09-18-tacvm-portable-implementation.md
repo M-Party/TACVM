@@ -53,9 +53,9 @@
 
 ### Task 4: Participant acceptance + registry FSM (portable)
 
-- [ ] Tests for duplicate acceptance / duplicate policy key
-- [ ] Implement registry + barrier before policy collection
-- [ ] Commit
+- [x] Tests for duplicate acceptance / duplicate policy key
+- [x] Implement registry + barrier before policy collection
+- [x] Commit
 
 ### Task 5: Launch context + `B_w` FSM (mock)
 
