@@ -35,7 +35,7 @@
 | Participant confirmer | PARTIAL | `evaluation-assets/participant-policy-confirmer/` |
 | Homogeneous N fixtures | IMPLEMENTED | N=2/4/8/16/32 YAML + generator |
 | Three-party fixture | IMPLEMENTED | `fixtures/three-party-proposals.yaml` |
-| Canonical encode helper | NOT_IMPLEMENTED | — |
+| Canonical encode helper | IMPLEMENTED | `protocol/tacvm_protocol/encode.py` |
 | Mock TEE backend | NOT_IMPLEMENTED | — |
 | E1–E7 harness | NOT_IMPLEMENTED | Specs only |
 | Adapter guide for coauthor | IMPLEMENTED (Phase A) | `docs/integration/tdx_adapter_guide.md` |

@@ -19,7 +19,7 @@
 | Evaluation harness contract | `TACVM_Evaluation_Implementation_Spec.md` | SPEC |
 | N-party scale fixtures | `evaluation-assets/policy-aggregation-core/fixtures/*-party-homogeneous.yaml` | IMPLEMENTED (mock inputs) |
 | 3-party differential fixture | `.../fixtures/three-party-proposals.yaml` | IMPLEMENTED |
-| Canonical encode library | — | NOT_IMPLEMENTED |
+| Canonical encode library | `protocol/tacvm_protocol/` | IMPLEMENTED (encode + hash_domain) |
 | BootManifest / d_M tooling | — | NOT_IMPLEMENTED |
 | Participant acceptance (TACVM-ACCEPT) | — | NOT_IMPLEMENTED |
 | Quote Verifier / DCAP QVL | — | NOT IN THIS REPO |

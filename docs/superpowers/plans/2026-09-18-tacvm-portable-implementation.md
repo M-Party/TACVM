@@ -34,9 +34,9 @@
 
 ### Task 1: Canonical encoding skeleton
 
-- [ ] Add failing tests for domain-separated encode/hash determinism (`TACVM-BOOT`, `TACVM-PROPOSAL`, …)
-- [ ] Implement minimal encoder module
-- [ ] Run tests; commit
+- [x] Add failing tests for domain-separated encode/hash determinism (`TACVM-BOOT`, `TACVM-PROPOSAL`, …)
+- [x] Implement minimal encoder module
+- [x] Run tests; commit
 
 ### Task 2: Align policy components with encoder + error codes
 
