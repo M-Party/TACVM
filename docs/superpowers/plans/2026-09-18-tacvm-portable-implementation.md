@@ -40,9 +40,9 @@
 
 ### Task 2: Align policy components with encoder + error codes
 
-- [ ] Map existing coordinator/confirmer messages to stable `ERR_*` codes from the design spec
-- [ ] Add tests for wrong pid/v/r and incomplete participant sets (extend current tests)
-- [ ] Commit
+- [x] Map existing coordinator/confirmer messages to stable `ERR_*` codes from the design spec
+- [x] Add tests for wrong pid/v/r and incomplete participant sets (extend current tests)
+- [x] Commit
 
 ### Task 3: Mock TEE + adapter interfaces
 

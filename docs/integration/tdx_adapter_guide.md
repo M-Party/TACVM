@@ -76,6 +76,8 @@ ActivateIfComplete()                # atomic immutable snapshot
 ```
 
 Your server remains the network endpoint; portable code owns join/confirm checks.
+Proposal/confirm signatures must cover `canonical_encode("TACVM-PROPOSAL"|"TACVM-CONFIRM", fields)`
+from `protocol/tacvm_protocol` (domain wrapper + sorted fields), not ad-hoc string concat.
 
 ### D. Workload launch context / binding
 

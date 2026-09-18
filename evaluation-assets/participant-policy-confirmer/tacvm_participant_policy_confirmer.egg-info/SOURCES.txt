@@ -1,0 +1,9 @@
+README.md
+confirm_policy.py
+pyproject.toml
+tacvm_participant_policy_confirmer.egg-info/PKG-INFO
+tacvm_participant_policy_confirmer.egg-info/SOURCES.txt
+tacvm_participant_policy_confirmer.egg-info/dependency_links.txt
+tacvm_participant_policy_confirmer.egg-info/requires.txt
+tacvm_participant_policy_confirmer.egg-info/top_level.txt
+tests/test_confirmation.py

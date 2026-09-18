@@ -9,8 +9,8 @@
 | Paper / spec component | Current location in this repo | Status |
 |---|---|---|
 | Restrictive policy join / candidate | `evaluation-assets/policy-aggregation-core/` | PARTIAL (Python prototype) |
-| Operation CVM policy round FSM | `evaluation-assets/operation-cvm-policy-coordinator/` | PARTIAL |
-| Participant confirmation | `evaluation-assets/participant-policy-confirmer/` | PARTIAL |
+| Operation CVM policy round FSM | `evaluation-assets/operation-cvm-policy-coordinator/` | PARTIAL (uses `tacvm_protocol` wire encode) |
+| Participant confirmation | `evaluation-assets/participant-policy-confirmer/` | PARTIAL (uses `tacvm_protocol` wire encode) |
 | Policy schema / checklist | `evaluation-assets/POLICY_SCHEMA.md` | PARTIAL (provisional) |
 | Component boundaries | `evaluation-assets/POLICY_COMPONENTS.md` | DOCUMENTED |
 | Evaluation plan (older E1–E3 style) | `evaluation-assets/EVALUATION_PLAN.md` | DOCUMENTED |

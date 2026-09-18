@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: tacvm-operation-cvm-policy-coordinator
+Version: 0.3.0
+Summary: Operation CVM policy negotiation, distribution, confirmation, and activation
+Requires-Python: >=3.9
+Requires-Dist: cryptography>=41
+Requires-Dist: tacvm-policy-aggregation-core==0.3.0

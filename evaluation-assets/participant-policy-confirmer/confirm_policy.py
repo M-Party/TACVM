@@ -16,6 +16,7 @@ from tacvm_policy_core import (
     canonical_json,
     verify_candidate_against_proposal,
 )
+from tacvm_protocol import canonical_encode
 
 
 def _confirmation_message(
@@ -23,16 +24,16 @@ def _confirmation_message(
     context: Mapping[str, Any],
     digest_value: str,
 ) -> bytes:
-    return canonical_json(
+    return canonical_encode(
+        "TACVM-CONFIRM",
         {
-            "domain": "TACVM-CONFIRM",
             "participant_id": participant_id,
             "policy_id": context["policy_id"],
             "version": context["version"],
             "round": context["round"],
             "candidate_digest": digest_value,
-        }
-    ).encode("utf-8")
+        },
+    )
 
 
 def sign_confirmation(

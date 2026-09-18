@@ -10,6 +10,7 @@ requires-python = ">=3.9"
 dependencies = [
   "cryptography>=41",
   "tacvm-policy-aggregation-core==0.3.0",
+  "tacvm-protocol==0.1.0",
 ]
 
 [tool.setuptools]

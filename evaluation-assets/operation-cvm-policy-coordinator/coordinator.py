@@ -10,12 +10,12 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from tacvm_policy_core import (
     PolicyError,
     build_candidate as aggregate_candidate,
-    canonical_json,
     normalize_proposal,
     proposal_digest,
     validate_proposal,
     validate_round_context,
 )
+from tacvm_protocol import canonical_encode
 
 
 def proposal_signing_message(
@@ -23,16 +23,16 @@ def proposal_signing_message(
     context: Mapping[str, Any],
     digest_value: str,
 ) -> bytes:
-    return canonical_json(
+    return canonical_encode(
+        "TACVM-PROPOSAL",
         {
-            "domain": "TACVM-PROPOSAL",
             "participant_id": participant_id,
             "policy_id": context["policy_id"],
             "version": context["version"],
             "round": context["round"],
             "proposal_digest": digest_value,
-        }
-    ).encode("utf-8")
+        },
+    )
 
 
 def confirmation_signing_message(
@@ -40,16 +40,16 @@ def confirmation_signing_message(
     context: Mapping[str, Any],
     digest_value: str,
 ) -> bytes:
-    return canonical_json(
+    return canonical_encode(
+        "TACVM-CONFIRM",
         {
-            "domain": "TACVM-CONFIRM",
             "participant_id": participant_id,
             "policy_id": context["policy_id"],
             "version": context["version"],
             "round": context["round"],
             "candidate_digest": digest_value,
-        }
-    ).encode("utf-8")
+        },
+    )
 
 
 class PolicyCoordinator:
@@ -121,16 +121,26 @@ class PolicyCoordinator:
         public_key = self.participant_keys.get(participant_id)
         if public_key is None:
             raise PolicyError(
-                "UNKNOWN_PARTICIPANT",
+                "ERR_UNKNOWN_PARTICIPANT",
                 f"No policy key is bound for {participant_id}",
             )
         if participant_id in self.proposals:
             raise PolicyError(
-                "DUPLICATE_PROPOSAL",
+                "ERR_DUPLICATE_PROPOSAL",
                 f"{participant_id} already submitted a proposal",
             )
-
-        validate_proposal(proposal, self.context, set(self.participant_keys))
+        try:
+            validate_proposal(proposal, self.context, set(self.participant_keys))
+        except PolicyError as exc:
+            if exc.code == "REJECT_CONTEXT":
+                proposal_context = proposal.get("context", {})
+                if proposal_context.get("policy_id") != self.context["policy_id"]:
+                    raise PolicyError("ERR_POLICY_PID", str(exc)) from exc
+                if proposal_context.get("version") != self.context["version"]:
+                    raise PolicyError("ERR_POLICY_VERSION", str(exc)) from exc
+                if proposal_context.get("round") != self.context["round"]:
+                    raise PolicyError("ERR_POLICY_ROUND", str(exc)) from exc
+            raise
         normalized = normalize_proposal(proposal)
         digest_value = proposal_digest(normalized)
         if digest_value != envelope.get("proposal_digest"):
@@ -151,7 +161,7 @@ class PolicyCoordinator:
             )
         except (InvalidSignature, KeyError, ValueError, TypeError):
             raise PolicyError(
-                "INVALID_PROPOSAL_SIGNATURE",
+                "ERR_POLICY_SIGNATURE",
                 "Proposal signature verification failed",
             )
 
@@ -228,16 +238,20 @@ class PolicyCoordinator:
                 f"{participant_id} already confirmed this candidate",
             )
 
-        for field in ("policy_id", "version", "round"):
+        for field, code in (
+            ("policy_id", "ERR_POLICY_PID"),
+            ("version", "ERR_POLICY_VERSION"),
+            ("round", "ERR_POLICY_ROUND"),
+        ):
             if confirmation.get(field) != self.context[field]:
                 raise PolicyError(
-                    "CONFIRMATION_CONTEXT_MISMATCH",
+                    code,
                     f"Confirmation has an unexpected {field}",
                 )
         digest_value = self.candidate_bundle["candidate_digest"]
         if confirmation.get("candidate_digest") != digest_value:
             raise PolicyError(
-                "CANDIDATE_DIGEST_MISMATCH",
+                "ERR_CONFIRM_HASH",
                 "Confirmation targets another candidate",
             )
         if confirmation.get("signature_algorithm") != "Ed25519":
