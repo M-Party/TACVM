@@ -29,8 +29,8 @@
 | `lambda_w` / pending launch / `B_w` | — | NOT_IMPLEMENTED |
 | `launch-client.sh` / fleet harness | — | NOT IN THIS REPO |
 | E1–E7 formal harness | — | NOT_IMPLEMENTED |
-| Mock TEE backend | — | NOT_IMPLEMENTED |
-| TDX adapter backend | — | NOT_IMPLEMENTED (interfaces TBD) |
+| Mock TEE backend | `protocol/tacvm_protocol/backends/mock.py` | IMPLEMENTED |
+| TDX adapter backend | `protocol/tacvm_protocol/backends/tdx.py` | PARTIAL (stub; coauthor wires) |
 
 ## 2. Paper component → coauthor TDX host (from feedback)
 
