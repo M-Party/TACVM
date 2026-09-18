@@ -28,7 +28,7 @@
 | Trusted Service | `protocol/tacvm_protocol/dispatcher.py` (mock local state) | PARTIAL |
 | `lambda_w` / pending launch / `B_w` | `protocol/tacvm_protocol/workload.py` | IMPLEMENTED (portable/mock FSM) |
 | `launch-client.sh` / fleet harness | — | NOT IN THIS REPO |
-| E1–E7 formal harness | — | NOT_IMPLEMENTED |
+| E1–E7 formal harness | `evaluation/scripts/` | PARTIAL (E2 mock dry-run; E1/E3–E7 stubs) |
 | Mock TEE backend | `protocol/tacvm_protocol/backends/mock.py` | IMPLEMENTED |
 | TDX adapter backend | `protocol/tacvm_protocol/backends/tdx.py` | PARTIAL (stub; coauthor wires) |
 

@@ -45,8 +45,8 @@
 
 | Experiment | Status in this repo | Notes |
 |---|---|---|
+| E2 policy scalability | PARTIAL | `evaluation/scripts/e2_policy_scalability.sh` mock dry-run |
 | E1 trust establishment | NOT_IMPLEMENTED | Needs coauthor RA + policy activation wiring |
-| E2 policy scalability | PARTIAL inputs only | Fixtures/generator ready; timed harness TBD |
 | E3 single Workload auth | NOT_IMPLEMENTED | Needs TDX provision/attest |
 | E4 concurrent Workload auth | NOT_IMPLEMENTED | Extend coauthor fleet scripts |
 | E5 admission | NOT_IMPLEMENTED | — |

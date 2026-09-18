@@ -71,19 +71,20 @@
 
 ### Task 7: Evaluation skeleton
 
-- [ ] Create `evaluation/{scripts,common,config}` layout from evaluation spec
-- [ ] CSV helpers + run_id + healthcheck stubs
-- [ ] E2 dry-run against homogeneous fixtures (no TDX)
-- [ ] Commit
+- [x] Create `evaluation/{scripts,common,config}` layout from evaluation spec
+- [x] CSV helpers + run_id + healthcheck stubs
+- [x] E2 dry-run against homogeneous fixtures (no TDX)
+- [x] Commit
 
 ### Task 8: Handoff package
 
-- [ ] Update READMEs with mock vs TDX instructions
-- [ ] Refresh `implementation_status.md`
-- [ ] Tag/package notes for coauthor
+- [x] Update READMEs with mock vs TDX instructions
+- [x] Refresh `implementation_status.md`
+- [x] Tag/package notes for coauthor
 
 ---
 
 ## Progress
 
-Phase A documentation is in tree; implementation tasks 1+ start after commit and user go-ahead for coding.
+Phases A–H portable skeleton are in tree through Task 8 handoff notes.
+Remaining work is TDX-host adapter wiring (coauthor) and filling E1/E3–E7 beyond stubs.
