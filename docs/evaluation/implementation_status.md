@@ -36,8 +36,8 @@
 | Homogeneous N fixtures | IMPLEMENTED | N=2/4/8/16/32 YAML + generator |
 | Three-party fixture | IMPLEMENTED | `fixtures/three-party-proposals.yaml` |
 | Canonical encode helper | IMPLEMENTED | `protocol/tacvm_protocol/encode.py` |
-| Mock TEE backend | NOT_IMPLEMENTED | — |
-| E1–E7 harness | NOT_IMPLEMENTED | Specs only |
+| Mock TEE backend | IMPLEMENTED | `protocol/tacvm_protocol/backends/mock.py` |
+| TDX adapter backend | PARTIAL (explicit stub) | `protocol/tacvm_protocol/backends/tdx.py` |
 | Adapter guide for coauthor | IMPLEMENTED (Phase A) | `docs/integration/tdx_adapter_guide.md` |
 | Repo mapping | IMPLEMENTED (Phase A) | `docs/evaluation/repo_mapping.md` |
 

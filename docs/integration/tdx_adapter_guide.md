@@ -123,12 +123,10 @@ Formal runners will live under `evaluation/scripts/e1_*.sh` … `e7_*.sh` (to be
 
 | Variable | Values | Meaning |
 |---|---|---|
-| `TACVM_TEE_BACKEND` | `mock` \| `tdx` | Hardware vs fake Quotes/provision |
-| `TACVM_VERIFIER_ENDPOINT` | e.g. `127.0.0.1:50051` | Your `policy_server` |
+| `TACVM_TEE_BACKEND` | `mock` \| `tdx` | `get_tee_backend()` selection. `mock` works locally; `tdx` raises `ERR_TDX_ADAPTER_NOT_WIRED` until you implement `TdxTeeBackend` methods against `policy_server`/QVL/launch. |
+| `TACVM_VERIFIER_ENDPOINT` | e.g. `127.0.0.1:50051` | Your `policy_server` (for future harness) |
 | `TACVM_FLEET_SCRIPT` | path to `cvm-fleet-test.sh` | Concurrent auth driver |
 | `TACVM_RUN_ID` | `YYYYMMDD-HHMMSS-...` | Isolate logs/results |
-
-Exact names may be finalized when harness code lands; keep this table updated.
 
 ---
 

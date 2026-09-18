@@ -46,10 +46,10 @@
 
 ### Task 3: Mock TEE + adapter interfaces
 
-- [ ] Define interfaces: quote, provision, binding
-- [ ] Implement `mock` backend
-- [ ] Stub `tdx` backend with clear `NotImplemented` / hook docs
-- [ ] Commit
+- [x] Define interfaces: quote, provision, binding
+- [x] Implement `mock` backend
+- [x] Stub `tdx` backend with clear `NotImplemented` / hook docs
+- [x] Commit
 
 ### Task 4: Participant acceptance + registry FSM (portable)
 

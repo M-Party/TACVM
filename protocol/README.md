@@ -10,18 +10,24 @@ pytest
 ```
 
 ```python
-from tacvm_protocol import canonical_encode, hash_domain
+from tacvm_protocol import canonical_encode, hash_domain, get_tee_backend
 
 digest = hash_domain(
     "TACVM-BOOT",
     {"n_i": "...", "pk_ch": "...", "d_M": "..."},
 )
+
+backend = get_tee_backend("mock")  # or TACVM_TEE_BACKEND=tdx
+evidence = backend.generate_operation_quote(n_i="..", pk_ch="..", d_M="..")
 ```
 
 Supported domains: `TACVM-BOOT`, `TACVM-ACCEPT`, `TACVM-POLICY`,
 `TACVM-PROPOSAL`, `TACVM-CONFIRM`, `TACVM-WORKLOAD`,
 `TACVM-WORKLOAD-ATTEST`, `TACVM-TRANS`.
 
-This package does not talk to TDX hardware. Coauthor hosts should reuse these
-helpers (or an equivalent C++ port) when building REPORTDATA and signed
-envelopes.
+TEE adapters:
+
+- `mock` — deterministic fake Quotes / provision / `B_w` for local tests
+- `tdx` — explicit stub raising `ERR_TDX_ADAPTER_NOT_WIRED` until the coauthor
+  wires `policy_server` / QVL / launch scripts (see
+  `docs/integration/tdx_adapter_guide.md`)
