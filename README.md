@@ -1,27 +1,43 @@
 # TACVM
 
-Portable TACVM protocol helpers, policy agreement prototypes, and evaluation
-harness skeletons for handoff to a TDX-capable coauthor host.
+Portable TACVM protocol and policy components, organized by **where they run**.
 
-## Quick start (this host — no TDX)
+## Layout (by role)
 
-```bash
-PYTHONPATH=protocol python3 -m pytest protocol/tests -q
-bash evaluation/scripts/e2_policy_scalability.sh
+| Path | Runs at |
+|---|---|
+| [`operation_cvm/`](operation_cvm/README.md) | Operation CVM (policy parser, registry, launch/`B_w`, dispatcher) |
+| [`workload_cvm/`](workload_cvm/README.md) | Workload CVM (Trusted Service local state) |
+| [`participants/`](participants/README.md) | Each participant (policy confirmer) |
+| [`shared/`](shared/README.md) | Shared encode + TEE adapters |
+| [`evaluation/`](evaluation/README.md) | Q1–Q3 evaluation harness |
+| [`docs/`](docs/README.md) | Design, **Q1–Q3 questions**, coauthor adapter guide |
+
+```text
+Participants                 Operation CVM                 Workload CVM
+    │                            │                              │
+    │ authenticate + policy      │                              │
+    ├───────────────────────────►│                              │
+    │                            │ create lambda_w, attest      │
+    │                            ├─────────────────────────────►│
+    │                            │◄──────────── B_w ────────────┤
+    │                            │ authorize transition         │
+    │                            ├─────────────────────────────►│ Trusted Service
 ```
 
-## Docs
+## Quick start (no TDX)
 
-- [docs/HANDOFF.md](docs/HANDOFF.md) — what to give the coauthor
-- [docs/integration/tdx_adapter_guide.md](docs/integration/tdx_adapter_guide.md) — how they wire `policy_server`
-- [docs/evaluation/repo_mapping.md](docs/evaluation/repo_mapping.md) — component map
-- [docs/evaluation/implementation_status.md](docs/evaluation/implementation_status.md) — status matrix
+```bash
+python3 -m pytest -q
+# Q1 Fig.6(b)
+N=3 RULES="10 100 1000" bash evaluation/scripts/e2_policy_scalability.sh
+# Q3 ΔT
+ITERATIONS=30 WARMUPS=5 bash evaluation/scripts/e5_admission.sh
+```
 
-## Layout
+Paper evaluation questions: [`docs/evaluation/EVALUATION_QUESTIONS.md`](docs/evaluation/EVALUATION_QUESTIONS.md).
 
-| Path | Role |
-|---|---|
-| `protocol/` | Encode, registry, TEE adapters, launch/B_w FSM, dispatcher |
-| `evaluation-assets/` | Policy join/coordinator/confirmer + fixtures |
-| `evaluation/` | E1–E7 scripts (E2 runnable on mock) |
-| `docs/` | Design, mapping, adapter guide |
+## Coauthor handoff
+
+See [`docs/HANDOFF.md`](docs/HANDOFF.md) and
+[`docs/integration/tdx_adapter_guide.md`](docs/integration/tdx_adapter_guide.md).

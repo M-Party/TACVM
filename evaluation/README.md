@@ -1,27 +1,39 @@
 # TACVM evaluation harness
 
-Layout follows `TACVM_Cursor_Design_Implementation_Spec.md` §22–§23.
+Paper-facing questions: [`docs/evaluation/EVALUATION_QUESTIONS.md`](../docs/evaluation/EVALUATION_QUESTIONS.md).
+
+```text
+Q1 trust plane → Q2 Workload B_w → Q3 control-path ΔT
+```
 
 ## Local (no TDX)
 
 ```bash
-# From repo root
 export TACVM_TEE_BACKEND=mock
-bash evaluation/scripts/e2_policy_scalability.sh
-# or
-bash evaluation/scripts/run_all.sh
+
+# Q1 Fig.6(b): policy processing vs P (fixed N=3)
+N=3 RULES="10 100 1000" ITERATIONS=3 \
+  bash evaluation/scripts/e2_policy_scalability.sh
+
+# Q1 Fig.6(a) dry-run phases (boot/RA are mock stand-ins — not paper boot numbers)
+bash evaluation/scripts/e1_trust_establishment.sh
+
+# Q3: admit control-path ΔT (request → Trusted Service accept)
+ITERATIONS=30 WARMUPS=5 bash evaluation/scripts/e5_admission.sh
+
+# Optional full portable walkthrough
+python3 evaluation/scripts/local_sim_op_already_up.py
 ```
-
-E2 measures policy verify / join / candidate-construction time for fixed `N`
-and rule counts `P` using homogeneous fixtures. It does **not** include Quote
-RTT or CVM launch.
-
-Results land in `results/<run_id>/raw` and `summary`.
 
 ## TDX host
 
-Keep `docs/integration/tdx_adapter_guide.md` as the wiring contract. E1/E3–E7
-scripts currently exit with status 2 until adapters and fleet hooks are ready.
+| Question | Needs |
+|---|---|
+| Q1 Fig.6(a) | Real Operation CVM boot + participant RA |
+| Q2 table | Workload CVM auth / live \(B_w\) fleet (\(M=1..16\)) |
+| Q3 \(\Delta T\) | Same guest TS; Direct vs Op-CVM path over real control channel |
+
+Wiring: [`docs/integration/tdx_adapter_guide.md`](../docs/integration/tdx_adapter_guide.md).
 
 ## Health checks
 

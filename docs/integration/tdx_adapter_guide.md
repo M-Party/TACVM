@@ -27,12 +27,15 @@ This repository will **not** ship a second `policy_server`. You adapt.
 
 | Package / doc | Role |
 |---|---|
-| `evaluation-assets/policy-aggregation-core` | Deterministic restrictive join + candidate digest |
-| `evaluation-assets/operation-cvm-policy-coordinator` | Proposal collect → candidate → confirm → activate FSM |
-| `evaluation-assets/participant-policy-confirmer` | Participant-side candidate check + `TACVM-CONFIRM` |
-| Policy fixtures (3-party + homogeneous N=2..32) | Local/scale policy inputs |
-| `docs/evaluation/*` | Mapping and status |
-| Future: encode helpers, `B_w` FSM, dispatcher checks, E1–E7 harness | Portable logic + mock backend |
+| `operation_cvm/policy_aggregation` | Deterministic restrictive join + candidate digest |
+| `operation_cvm/policy_coordinator` | Proposal collect → candidate → confirm → activate FSM |
+| `participants/policy_confirmer` | Participant-side candidate check + `TACVM-CONFIRM` |
+| `operation_cvm/participant_registry` | TACVM-ACCEPT registry + barrier |
+| `operation_cvm/workload_launch` | `lambda_w` / `B_w` lifecycle |
+| `operation_cvm/dispatcher` | Transition authorization |
+| `workload_cvm/trusted_service` | Local prior-state enforcement |
+| Policy fixtures | `operation_cvm/policy_aggregation/fixtures/` |
+| Future encode/TEE helpers | `shared/protocol/` |
 
 Treat Python components as **reference semantics / callable libraries** to port or embed. If you prefer C++, preserve the same wire fields, digests, and fail-closed rules.
 
@@ -77,7 +80,7 @@ ActivateIfComplete()                # atomic immutable snapshot
 
 Your server remains the network endpoint; portable code owns join/confirm checks.
 Proposal/confirm signatures must cover `canonical_encode("TACVM-PROPOSAL"|"TACVM-CONFIRM", fields)`
-from `protocol/tacvm_protocol` (domain wrapper + sorted fields), not ad-hoc string concat.
+from `shared/protocol/tacvm_protocol` (domain wrapper + sorted fields), not ad-hoc string concat.
 
 ### D. Workload launch context / binding
 

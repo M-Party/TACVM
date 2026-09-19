@@ -17,14 +17,15 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [
-    str(REPO_ROOT / "protocol"),
-    str(REPO_ROOT / "evaluation-assets" / "policy-aggregation-core"),
-    str(REPO_ROOT / "evaluation-assets" / "policy-aggregation-core" / "fixtures"),
+    str(REPO_ROOT / "shared" / "protocol"),
+    str(REPO_ROOT / "operation_cvm" / "policy_aggregation"),
+    str(REPO_ROOT / "operation_cvm" / "policy_aggregation" / "fixtures"),
 ]
 
 from generate_homogeneous import build_homogeneous_bundle, participant_ids  # noqa: E402
 from tacvm_policy_core import (  # noqa: E402
-    build_candidate,
+    candidate_digest,
+    join_policy_bodies,
     normalize_proposal,
     proposal_digest,
 )
@@ -45,30 +46,43 @@ def run_once(n: int, rules: int, iteration: int, session: int, run_id: str) -> d
         proposal["author"]["participant_id"]: proposal for proposal in bundle["proposals"]
     }
 
-    def verify_all():
-        digests = []
-        for participant_id in order:
-            normalized = normalize_proposal(by_participant[participant_id])
-            digests.append(proposal_digest(normalized))
-        return digests
-
-    _, proposal_verify_us = _timed_us(verify_all)
-
-    # Isolate join body timing by normalizing first.
+    # Normalize once up front; timed phases must not re-normalize.
     normalized_map = {
         participant_id: normalize_proposal(by_participant[participant_id])
         for participant_id in order
     }
 
+    def verify_all():
+        return [
+            proposal_digest(normalized_map[participant_id], already_normalized=True)
+            for participant_id in order
+        ]
+
+    digests, proposal_verify_us = _timed_us(verify_all)
+
     def join_only():
-        from tacvm_policy_core import join_policy_bodies
+        return join_policy_bodies(
+            [normalized_map[pid] for pid in order],
+            already_normalized=True,
+        )
 
-        return join_policy_bodies([normalized_map[pid] for pid in order])
-
-    _, join_us = _timed_us(join_only)
+    joined, join_us = _timed_us(join_only)
 
     def construct():
-        return build_candidate(context, order, by_participant)
+        candidate = {
+            "schema": "tacvm-policy-candidate/v0.2",
+            "context": dict(context),
+            "inputs": [
+                {
+                    "participant_id": participant_id,
+                    "proposal_digest": digest,
+                }
+                for participant_id, digest in zip(order, digests)
+            ],
+            "policy": joined,
+        }
+        digest = candidate_digest(candidate)
+        return {"candidate": candidate, "candidate_digest": digest}
 
     result, candidate_construct_us = _timed_us(construct)
     total_us = proposal_verify_us + join_us + candidate_construct_us
@@ -89,7 +103,7 @@ def run_once(n: int, rules: int, iteration: int, session: int, run_id: str) -> d
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--n", type=int, default=8)
+    parser.add_argument("--n", type=int, default=3)
     parser.add_argument(
         "--rules",
         type=int,

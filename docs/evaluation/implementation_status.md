@@ -1,60 +1,43 @@
 # TACVM Implementation Status
 
-**Date:** 2026-09-18  
+**Date:** 2026-09-19  
 **Legend:** `IMPLEMENTED` | `EXISTING_AND_VERIFIED` | `PARTIAL` | `NOT_IMPLEMENTED` | `BLOCKED`
 
-`EXISTING_AND_VERIFIED` below refers to the **coauthor TDX host**, not this checkout.
+Paper Q1–Q3: [`EVALUATION_QUESTIONS.md`](EVALUATION_QUESTIONS.md).
 
-## Protocol and security invariants
+## Evaluation questions
+
+| Q | Artifact | Status here | Evidence |
+|---|---|---|---|
+| Q1 Fig.6(a) Trust vs \(N\) | stacked bars | PARTIAL (mock phases) | `evaluation/scripts/e1_*`; paper boot/RA from TDX host |
+| Q1 Fig.6(b) Policy vs \(P\) | stacked bars | IMPLEMENTED (mock) | `e2_*`, `results/*e2*` (\(N=3\)) |
+| Q2 Workload auth vs \(M\) | table | NOT_IMPLEMENTED locally | needs TDX fleet (`e3`/`e4`) |
+| Q3 Control \(\Delta T\) | prose \(\Delta T\) | IMPLEMENTED (mock) | `e5_control_overhead.py`, `results/*e5*` |
+
+## Layout
+
+| Tree | Role |
+|---|---|
+| `operation_cvm/` | Operation CVM components |
+| `workload_cvm/` | Workload CVM Trusted Service |
+| `participants/` | Participant-side confirmer |
+| `shared/protocol/` | Encode + TEE adapters |
+| `evaluation/` | Harness |
+
+## Protocol invariants (selected)
 
 | Requirement | Status | Evidence |
 |---|---|---|
-| No workload control before policy activation | NOT_IMPLEMENTED | No Operation CVM authority gate in this repo |
-| All participants authenticate same Operation CVM | PARTIAL / BLOCKED locally | Coauthor has RA path; this repo has no boot accept flow |
-| Unique policy-key registration | IMPLEMENTED (portable) | `protocol/tacvm_protocol/registry.py` |
-| Proposal rounds scoped by pid/v/r | PARTIAL | Coordinator uses context fields; full pid derivation pending |
-| Restrictive join cannot widen authority | PARTIAL | `policy-aggregation-core` implements intersection/DENY joins |
-| Unanimous confirmation before activation | PARTIAL | Coordinator + confirmer prototypes |
-| Atomic policy update | PARTIAL | Activate publishes snapshot in prototype; persistence TBD |
-| Fresh `lambda_w` per Workload CVM | IMPLEMENTED (portable/mock) | `protocol/tacvm_protocol/workload.py` |
-| Launch-context replay rejected | IMPLEMENTED (portable/mock) | `WorkloadLaunchFSM` |
-| Evidence binds launch context + `pk_w` | PARTIAL | Mock attest hash via `TACVM-WORKLOAD-ATTEST` |
-| `B_w` required before secrets/commands | IMPLEMENTED (portable/mock) | Dispatcher checks LIVE binding |
-| Restart/channel loss invalidates `B_w` | IMPLEMENTED (portable/mock) | `on_channel_lost` |
-| Trusted Service prior-state / artifact checks | PARTIAL | Mock local-state check in dispatcher |
-| Replay protection for challenges/u/etc. | PARTIAL | Transition `u` replay rejected; challenge path on coauthor host |
-| Global client IDs | EXISTING_AND_VERIFIED (coauthor) | Deployed to 16 CVMs |
-| `state_mutex_` / appraisal mutex | EXISTING_AND_VERIFIED (coauthor) | Concurrent retest passed; server stayed alive |
-
-## Repository assets
-
-| Asset | Status | Path |
-|---|---|---|
-| Policy aggregation core | PARTIAL | `evaluation-assets/policy-aggregation-core/` |
-| Policy coordinator | PARTIAL | `evaluation-assets/operation-cvm-policy-coordinator/` |
-| Participant confirmer | PARTIAL | `evaluation-assets/participant-policy-confirmer/` |
-| Homogeneous N fixtures | IMPLEMENTED | N=2/4/8/16/32 YAML + generator |
-| Three-party fixture | IMPLEMENTED | `fixtures/three-party-proposals.yaml` |
-| Canonical encode helper | IMPLEMENTED | `protocol/tacvm_protocol/encode.py` |
-| Mock TEE backend | IMPLEMENTED | `protocol/tacvm_protocol/backends/mock.py` |
-| TDX adapter backend | PARTIAL (explicit stub) | `protocol/tacvm_protocol/backends/tdx.py` |
-| Adapter guide for coauthor | IMPLEMENTED (Phase A) | `docs/integration/tdx_adapter_guide.md` |
-| Repo mapping | IMPLEMENTED (Phase A) | `docs/evaluation/repo_mapping.md` |
-
-## Evaluation experiments
-
-| Experiment | Status in this repo | Notes |
-|---|---|---|
-| E2 policy scalability | PARTIAL | `evaluation/scripts/e2_policy_scalability.sh` mock dry-run |
-| E1 trust establishment | NOT_IMPLEMENTED | Needs coauthor RA + policy activation wiring |
-| E3 single Workload auth | NOT_IMPLEMENTED | Needs TDX provision/attest |
-| E4 concurrent Workload auth | NOT_IMPLEMENTED | Extend coauthor fleet scripts |
-| E5 admission | NOT_IMPLEMENTED | — |
-| E6 Redis/ResNet | NOT_IMPLEMENTED | — |
-| E7 security validation | NOT_IMPLEMENTED | — |
+| Restrictive join | PARTIAL | `operation_cvm/policy_aggregation` |
+| Unanimous confirm + activate | PARTIAL | `operation_cvm/policy_coordinator` + `participants/policy_confirmer` |
+| Unique policy-key registration | IMPLEMENTED | `operation_cvm/participant_registry` |
+| Fresh `lambda_w` / replay reject / `B_w` invalidate | IMPLEMENTED (mock) | `operation_cvm/workload_launch` |
+| Dispatcher + prior-state check | PARTIAL | `operation_cvm/dispatcher` + `workload_cvm/trusted_service` |
+| Canonical encode | IMPLEMENTED | `shared/protocol` |
+| Mock / TDX TEE backends | mock IMPLEMENTED; tdx stub | `shared/protocol/.../backends` |
+| Coauthor client IDs + mutexes | EXISTING_AND_VERIFIED | external TDX host |
 
 ## Blockers on this host
 
-- No Intel TDX / no real Quote generation.
+- No Intel TDX / no `/dev/kvm` — cannot run formal Q1 boot/RA or Q2 fleet here.
 - Coauthor `policy_server` sources are not in this tree by design.
-- Formal E1/E3–E7 numbers require the TDX host after adapter wiring.
